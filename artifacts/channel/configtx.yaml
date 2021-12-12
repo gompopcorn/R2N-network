@@ -1,0 +1,296 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+---
+################################################################################
+#
+#   ORGANIZATIONS
+#
+#   This section defines the organizational identities that can be referenced
+#   in the configuration profiles.
+#
+################################################################################
+Organizations:
+
+    - &Org1
+        Name: Org1MSP
+
+        # ID to load the MSP definition as
+        ID: Org1MSP
+
+        MSPDir: ../../org1/crypto-config/peerOrganizations/org1.example.com/msp
+                
+        Policies: &Org1MSPPolicies
+            Readers:
+                Type: Signature
+                Rule: "OR('Org1MSP.member')"
+                # If your MSP is configured with the new NodeOUs, you might
+                # want to use a more specific rule like the following:
+                # Rule: "OR('SampleOrg.admin', 'SampleOrg.peer', 'SampleOrg.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('Org1MSP.member')"
+                # If your MSP is configured with the new NodeOUs, you might
+                # want to use a more specific rule like the following:
+                # Rule: "OR('SampleOrg.admin', 'SampleOrg.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('Org1MSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('Org1MSP.peer')"
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.org1.example.com
+              Port: 7051
+    
+    - &Org2
+        Name: Org2MSP
+
+        # ID to load the MSP definition as
+        ID: Org2MSP
+
+        MSPDir: ../../org2/crypto-config/peerOrganizations/org2.example.com/msp
+
+        Policies: &Org2MSPPolicies
+            Readers:
+                Type: Signature
+                Rule: "OR('Org2MSP.member')"
+                # If your MSP is configured with the new NodeOUs, you might
+                # want to use a more specific rule like the following:
+                # Rule: "OR('SampleOrg.admin', 'SampleOrg.peer', 'SampleOrg.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('Org2MSP.member')"
+                # If your MSP is configured with the new NodeOUs, you might
+                # want to use a more specific rule like the following:
+                # Rule: "OR('SampleOrg.admin', 'SampleOrg.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('Org2MSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('Org2MSP.peer')"
+
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.org2.example.com
+              Port: 9051
+
+
+    - &Org3
+        Name: Org3MSP
+        # ID to load the MSP definition as
+        ID: Org3MSP
+
+        MSPDir: ../../org3/crypto-config/peerOrganizations/org3.example.com/msp
+                
+        Policies: &Org3MSPPolicies
+            Readers:
+                Type: Signature
+                Rule: "OR('Org3MSP.member')"
+                # If your MSP is configured with the new NodeOUs, you might
+                # want to use a more specific rule like the following:
+                # Rule: "OR('SampleOrg.admin', 'SampleOrg.peer', 'SampleOrg.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('Org3MSP.member')"
+                # If your MSP is configured with the new NodeOUs, you might
+                # want to use a more specific rule like the following:
+                # Rule: "OR('SampleOrg.admin', 'SampleOrg.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('Org3MSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('Org3MSP.peer')"
+
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.org3.example.com
+              Port: 11051
+################################################################################
+#
+#   CAPABILITIES
+#
+#   This section defines the capabilities of fabric network. This is a new
+#   concept as of v1.1.0 and should not be utilized in mixed networks with
+#   v1.0.x peers and orderers.  Capabilities define features which must be
+#   present in a fabric binary for that binary to safely participate in the
+#   fabric network.  For instance, if a new MSP type is added, newer binaries
+#   might recognize and validate the signatures from this type, while older
+#   binaries without this support would be unable to validate those
+#   transactions.  This could lead to different versions of the fabric binaries
+#   having different world states.  Instead, defining a capability for a channel
+#   informs those binaries without this capability that they must cease
+#   processing transactions until they have been upgraded.  For v1.0.x if any
+#   capabilities are defined (including a map with all capabilities turned off)
+#   then the v1.0.x peer will deliberately crash.
+#
+################################################################################
+Capabilities:
+    Channel: &ChannelCapabilities
+        V2_0: true
+
+    Orderer: &OrdererCapabilities
+        V2_0: true
+
+    Application: &ApplicationCapabilities
+        V2_0: true
+################################################################################
+#
+#   APPLICATION
+#
+#   This section defines the values to encode into a config transaction or
+#   genesis block for application-related parameters.
+#
+################################################################################
+Application: &ApplicationDefaults
+    Organizations:
+    Policies: &ApplicationDefaultPolicies
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        LifecycleEndorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+        Endorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+    Capabilities:
+        <<: *ApplicationCapabilities
+ 
+################################################################################
+#
+#   ORDERER
+#
+#   This section defines the values to encode into a config transaction or
+#   genesis block for orderer related parameters.
+#
+################################################################################
+Orderer: &OrdererDefaults
+    OrdererType: etcdraft
+    EtcdRaft:
+        Consenters:
+            - Host: orderer0.org1.example.com
+              Port: 7050
+              ClientTLSCert: ../../org1/crypto-config/peerOrganizations/org1.example.com/orderers/orderer0.org1.example.com/tls/server.crt
+              ServerTLSCert: ../../org1/crypto-config/peerOrganizations/org1.example.com/orderers/orderer0.org1.example.com/tls/server.crt        
+    Addresses:
+        - orderer0.org1.example.com:7050
+    
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 500
+        AbsoluteMaxBytes: 10 MB
+        PreferredMaxBytes: 2 MB
+
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+
+
+Channel: &ChannelDefaults
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+    Capabilities:
+        <<: *ChannelCapabilities
+
+Profiles:
+
+    BasicChannel:
+        Consortium: SampleConsortium
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Org1
+                - *Org2
+                - *Org3
+            Capabilities:
+                <<: *ApplicationCapabilities
+
+    OrdererGenesis:
+        <<: *ChannelDefaults
+        Capabilities:
+            <<: *ChannelCapabilities
+        Orderer:
+            <<: *OrdererDefaults
+            OrdererType: etcdraft
+            EtcdRaft:
+                Consenters:
+                - Host: orderer0.org1.example.com
+                  Port: 7050
+                  ClientTLSCert: ../../org1/crypto-config/peerOrganizations/org1.example.com/orderers/orderer0.org1.example.com/tls/server.crt
+                  ServerTLSCert: ../../org1/crypto-config/peerOrganizations/org1.example.com/orderers/orderer0.org1.example.com/tls/server.crt
+                - Host: orderer1.org1.example.com
+                  Port: 8050
+                  ClientTLSCert: ../../org1/crypto-config/peerOrganizations/org1.example.com/orderers/orderer1.org1.example.com/tls/server.crt
+                  ServerTLSCert: ../../org1/crypto-config/peerOrganizations/org1.example.com/orderers/orderer1.org1.example.com/tls/server.crt
+                - Host: orderer0.org2.example.com
+                  Port: 9050
+                  ClientTLSCert: ../../org2/crypto-config/peerOrganizations/org2.example.com/orderers/orderer0.org2.example.com/tls/server.crt
+                  ServerTLSCert: ../../org2/crypto-config/peerOrganizations/org2.example.com/orderers/orderer0.org2.example.com/tls/server.crt
+                - Host: orderer1.org2.example.com
+                  Port: 10050
+                  ClientTLSCert: ../../org2/crypto-config/peerOrganizations/org2.example.com/orderers/orderer1.org2.example.com/tls/server.crt
+                  ServerTLSCert: ../../org2/crypto-config/peerOrganizations/org2.example.com/orderers/orderer1.org2.example.com/tls/server.crt
+                - Host: orderer0.org3.example.com
+                  Port: 11050
+                  ClientTLSCert: ../../org3/crypto-config/peerOrganizations/org3.example.com/orderers/orderer0.org3.example.com/tls/server.crt
+                  ServerTLSCert: ../../org3/crypto-config/peerOrganizations/org3.example.com/orderers/orderer0.org3.example.com/tls/server.crt
+            Addresses:
+                - orderer0.org1.example.com:7050
+                - orderer1.org1.example.com:8050
+                - orderer0.org2.example.com:9050
+                - orderer1.org2.example.com:10050
+                - orderer0.org3.example.com:11050
+
+            Organizations:
+            - *Org1
+            - *Org2
+            - *Org3
+            Capabilities:
+                <<: *OrdererCapabilities
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                - *Org1
+                - *Org2
+                - *Org3

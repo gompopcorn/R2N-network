@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+rule_files:
+scrape_configs:
+  - job_name: "prometheus"
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["185.235.40.52:9090"]
+  - job_name: "Peers.org3"
+    static_configs:
+      - targets: ["185.235.40.52:9440","185.235.40.52:9441"]
+  - job_name: "Orderers.org3"
+    static_configs:
+      - targets: ["185.235.40.52:9445","185.235.40.52:9446"]
